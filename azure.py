@@ -26,9 +26,8 @@ class Azure:
         self.url = url
         self.key = key
 
-
-
-    def recognizeHandwriting(self, file_path):
+    
+    def recognizeHandwritingFromFile(self, file_path):
         """
         This function returns the handwritten text detected in an image.
 
@@ -42,15 +41,33 @@ class Azure:
             [1] https://westus.dev.cognitive.microsoft.com/docs/services/56f91f2d778daf23d8ec6739/operations/587f2c6a154055056008f200
         """
 
-        # Initialize request information
-        text_recognition_url = self._makeUrl('hwr.post')
-        headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': self.key}
-        params = {'handwriting': True}
         data = None
         with open(file_path, 'rb') as f:
             data = f.read()
 
         assert data
+
+        return self.recognizeHandwriting(data)
+
+
+    def recognizeHandwriting(self, data):
+        """
+        This function returns the handwritten text detected in an image.
+
+        Args:
+            data (binary): Binary data for an image. Must be in format JPEG, PNG, GIF, or BMP. Files size must be less than 4MB. Dimensions must be at least 50px x 50px.
+
+        Returns:
+            result (json): JSON object with HWR results from API request.
+
+        References:
+            [1] https://westus.dev.cognitive.microsoft.com/docs/services/56f91f2d778daf23d8ec6739/operations/587f2c6a154055056008f200
+        """
+
+        # Initialize request information
+        text_recognition_url = self._makeUrl('hwr.post')
+        headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': self.key}
+        params = {'handwriting': True}
         
         # Send request
         result = requests.post(url=text_recognition_url,
@@ -59,7 +76,11 @@ class Azure:
                                headers=headers)
 
         # Check that our request gave a good result
-        assert result.status_code == 202
+        try:
+            assert result.status_code == 202
+        except Exception:
+            print(result)
+            
 
         # The URL which will contain the HWR result
         operation_location = result.headers['Operation-Location']

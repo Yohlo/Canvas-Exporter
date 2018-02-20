@@ -38,11 +38,28 @@ class AzureTests(unittest.TestCase):
 
         assert url
 
+    def test_recognizeHandwritingFromFile(self):
+        """
+        Tests the recognizeHandwritingFromFile method of Azure
+        """
+
+        result = self.azure.recognizeHandwritingFromFile('data/42_handwritten.png')
+
+        assert result
+        assert result['lines'][0]['text'] == '42'
+
+
     def test_recognizeHandwriting(self):
         """
         Tests the recognizeHandwriting method of Azure
         """
-        result = self.azure.recognizeHandwriting('data/42_handwritten.png')
+        data = None
+        with open('data/42_handwritten.png', 'rb') as f:
+            data = f.read()
+
+        assert data
+
+        result = self.azure.recognizeHandwriting(data)
 
         assert result
         assert result['lines'][0]['text'] == '42'
