@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 
 class Azure:
     """
@@ -32,20 +33,24 @@ class Azure:
         This function returns the handwritten text detected in an image.
 
         Args:
-            file_path (str): Path to the image which will be sent. Must be in format JPEG, PNG, GIF, or BMP. Files size must be less than 4MB. Dimensions must be at least 50x50.
+            file_path (str): Path to the image which will be sent. Must be in format JPEG, PNG, GIF, or BMP. Files size must be less than 4MB. Dimensions must be at least 50px x 50px.
 
         Returns:
-            result (json): JSON object with OCR results from API request.
+            result (json): JSON object with HWR results from API request.
 
         References:
             [1] https://westus.dev.cognitive.microsoft.com/docs/services/56f91f2d778daf23d8ec6739/operations/587f2c6a154055056008f200
         """
 
         # Initialize request information
-        text_recognition_url = self.url + "RecognizeText"
+        text_recognition_url = self._makeUrl('hwr.post')
         headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': self.key}
         params = {'handwriting': True}
-        data = open(file_path, 'rb').read()
+        data = None
+        with open(file_path, 'rb') as f:
+            data = f.read()
+
+        assert data
         
         # Send request
         result = requests.post(url=text_recognition_url,
@@ -53,4 +58,34 @@ class Azure:
                                data=data,
                                headers=headers)
 
-        return result.json()
+        # Check that our request gave a good result
+        assert result.status_code == 202
+
+        # The URL which will contain the HWR result
+        operation_location = result.headers['Operation-Location']
+
+        # Poll the HWR result url until the task is complete
+        analysis = {}
+        while True:
+            response_final = requests.get(operation_location, headers=headers)
+            analysis = response_final.json()
+            if 'recognitionResult' not in analysis:
+                time.sleep(1)
+            else:
+                break
+
+        return analysis['recognitionResult']
+
+    def _makeUrl(self, purpose):
+        """
+        Return a valid endpoint url based on task type requested
+
+        Args:
+            purpose (str): can contain 'hwr.post'
+
+        Returns:
+            url (str): the desired endpoint url
+        """
+        return self.url + {
+                   'hwr.post': '/vision/v1.0/RecognizeText'
+               }[purpose]
