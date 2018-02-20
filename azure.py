@@ -17,12 +17,14 @@ class Azure:
         Ideally this class will provide an interface to all Azure cognitive APIs, but the current implementation is tailored towards the Azure computer vision API.
     """
     def __init__(self, url, key):
-        self.url = url
-        self.key = key
-
         # TODO: Improve checking validity of url and key
         assert url
         assert key
+
+        # Initialize object variables
+        self.url = url
+        self.key = key
+
 
 
     def recognizeHandwriting(self, file_path):
@@ -38,9 +40,17 @@ class Azure:
         References:
             [1] https://westus.dev.cognitive.microsoft.com/docs/services/56f91f2d778daf23d8ec6739/operations/587f2c6a154055056008f200
         """
-        text_recognition_url = self.url + "RecognizeText"
 
+        # Initialize request information
+        text_recognition_url = self.url + "RecognizeText"
         headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': self.key}
         params = {'handwriting': True}
+        data = open(file_path, 'rb').read()
+        
+        # Send request
+        result = requests.post(url=text_recognition_url,
+                               params=params,
+                               data=data,
+                               headers=headers)
 
-        # TODO: Load binary file, send request
+        return result.json()
