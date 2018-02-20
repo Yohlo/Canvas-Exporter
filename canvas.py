@@ -69,6 +69,25 @@ class Canvas:
 
         return r.json()
 
+    def getStudentID(self, username):
+        """
+        This function takes a students username and returns their Canvas ID. If no student is found,
+        the function returns -1. The student must be enrolled in the course. 
+
+        Args:
+            username (str): The username of the student
+        
+        Returns:
+            int: The ID of the student, or -1 if the student was not found. 
+        """
+
+        students = self.getStudents()
+        for student in students:
+            if student["login_id"] = username:
+                return student["id"]
+        
+        return -1
+
     def _prepareFileUpload(self, file_path, assignment_id, student_id):
         """
         This function tells Canvas that we are about to upload a file to the given

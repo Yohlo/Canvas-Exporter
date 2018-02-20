@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from canvas import Canvas
 
 commands = ['quizzes']
@@ -22,13 +23,24 @@ def quizzes(args):
 
     conf = loadConfig(args.config)
     c = Canvas(conf["token"], conf["course_id"], conf["URL"])
-    
-    ## Place holder command:
-    students = c.getStudents()
-    print(students)
+
+    with open(args.grades) as f:
+
+        lines = [line.strip() for line in f.readlines()]
+        for line in lines:
+
+            student,grade = line.split(" ")
+            student_id = c.getStudentID(student)
+            fname = "%s%s.pdf" % (folder, username)
+
+            if not os.path.isfile(fname):
+                raise Exception("File %s does not exist. " % fname)
+
+            fid = c.uploadFileToSubmission(fname, args.assignment_id, student_id)
+            c.gradeAssignmentAndComment(student_id, args.assignment_id, grade, files=[fid])
 
 def quizzes_parser(parser):
-    parser.add_argument("assignmentId", help="Unique Canvas ID for the assignment to grade")
+    parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
     parser.add_argument("folder", help="Path to folder containing all of the quizzes labeled \"username.pdf\" for each student")
     parser.add_argument("grades", help="Path to text document containing username and grade of students.")
     parser.add_argument("config", help="Path to configuration file containing token and canvas URL")
