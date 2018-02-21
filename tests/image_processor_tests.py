@@ -52,6 +52,9 @@ class ImageProcessorTests(unittest.TestCase):
         assert image_results['score']
         assert image_results['username']
 
+        print(image_results['score'])
+        print(image_results['username'])
+
 
 if __name__ == '__main__':
     sys.path.insert(0, '../')
