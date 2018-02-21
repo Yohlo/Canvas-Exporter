@@ -1,8 +1,10 @@
+import io
+
 from PIL import Image
 from models.template import Template
 from azure import Azure
 
-class ImageProcesser:
+class ImageProcessor:
     """
     Handles processing of images. Takes images and boxes on them, and sends them to Azure for processing, returning the result.
 
@@ -26,18 +28,24 @@ class ImageProcesser:
         """
 
         image_handle = io.BytesIO(image)
-        image = Image.frombytes(image_handle)
+        image = Image.open(image_handle)
 
         crops = {}
         # crop out each box, and run it through image recognition
         for box in self.template.boxes:
             area = box['descr']
             datatype = box['datatype']
-            subimage = image.crop(area[0], area[1], area[2], area[3])
-            subimagebytes = io.BytesIO(b'')
+            subimage = image.crop(box=(area[0], area[1], area[0]+area[2], area[1]+area[3]))
+            subimagebytes = io.BytesIO()
             subimage.save(subimagebytes, 'png')
-            raw_result = self.service.recognizeHandwriting(subimagebytes)
-            crops['name'] = self._processResult(raw_result, datatype)
+            subimage.save(box['name'] + '.png')
+            subimagebytes.seek(0)
+            raw_result = self.service.recognizeHandwriting(subimagebytes.read())
+            print(raw_result)
+            if raw_result['lines'] == []:
+                crops[box['name']] = None
+            else:
+                crops[box['name']] = self._processResult(raw_result['lines'][0]['text'], datatype)
 
         return crops
 

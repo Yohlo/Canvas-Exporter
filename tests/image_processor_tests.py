@@ -1,8 +1,10 @@
 import unittest
+import json
+import sys
 
 class ImageProcessorTests(unittest.TestCase):
     """
-    Unit and integration testing for ImageProcessor class
+    Unit and Integration testing for ImageProcessor class
     """
 
     def setUp(self):
@@ -30,15 +32,33 @@ class ImageProcessorTests(unittest.TestCase):
 
         # Initialize Template
         self.quiz_template = Template()
+        self.quiz_template.addBox('score', (1450, 130, 165, 125), 'int')
+        self.quiz_template.addBox('username', (1190, 201, 262, 77), 'str')
+
+        # Initialize ImageProcessor
+        self.ip = ImageProcessor(self.quiz_template, self.azure)
 
     def test_processImage(self):
-        pass
+        data = None
+        with open('data/quiz_format.png', 'rb') as f:
+            data = f.read()
+
+        assert data
+        
+        image_results = self.ip.processImage(data)
+
+        assert image_results
+
+        assert image_results['score']
+        assert image_results['username']
+
 
 if __name__ == '__main__':
     sys.path.insert(0, '../')
-    sys.path.insert(0, '../models/')
-
+    from image_processor import ImageProcessor
     from azure import Azure
+
+    sys.path.insert(0, '../models/')
     from template import Template
 
     unittest.main()
