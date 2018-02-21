@@ -18,7 +18,7 @@ class StringMatcher:
         """
         self.matches = set({})
 
-    def match_str(self, s, unique=True):
+    def match_str(self, s, unique=True, threshold=1):
         """
         Matches an input string against the set of strings. Returns the most likely match
 
@@ -35,14 +35,20 @@ class StringMatcher:
         best_match = None
         for st, score in matches:
             if st not in self.matches:
-                best_match = st
-                if unique:
-                    self.matches.add(st)
-                break
+                if score < threshold:
+                    best_match = st
+                    if unique:
+                        self.matches.add(st)
+                    break
+                else:
+                    print('Distance was over threshold for best match (' + str(score) + ' > ' + str(threshold) + ')')
+                    best_match = input('Please enter the name found on username.png: ').strip()
+                    if unique:
+                        self.matches.add(best_match)
 
-        assert match
+        assert best_match
 
-        return match
+        return best_match
 
     def normalized_levenshtein(self, s1, s2):
         """
