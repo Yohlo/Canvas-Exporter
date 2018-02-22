@@ -3,7 +3,7 @@ import json
 import os
 from canvas import Canvas
 
-commands = ['quizzes']
+commands = ['quizzes', 'split']
 
 def quizzes(args):
     """
@@ -39,11 +39,20 @@ def quizzes(args):
             fid = c.uploadFileToSubmission(fname, args.assignment_id, student_id)
             c.gradeAssignmentAndComment(student_id, args.assignment_id, grade, files=[fid])
 
+def split(args):
+    pass
+
 def quizzes_parser(parser):
     parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
     parser.add_argument("folder", help="Path to folder containing all of the quizzes labeled \"username.pdf\" for each student")
     parser.add_argument("grades", help="Path to text document containing username and grade of students.")
     parser.add_argument("config", help="Path to configuration file containing token and canvas URL")
+
+def split_parser(parser):
+    parser.add_argument("fname", help="Path to PDF document to split")
+    parser.add_argument("names", help="Path to txt file containing ordered names of the new files")
+    parser.add_argument("folder", help="Folder to save the new documents into")
+    parser.add_argument("-p", '--pages', nargs='?', default=1, help="Optional. Number of pages each split document should have")
 
 def loadConfig(config):
     """

@@ -6,6 +6,8 @@ def split(fname, names, folder, pages=1):
     This function splits a big pdf into individual ones and names them 
     in the order given in a txt files. This function relies on the pdfrw library.
 
+    Disclaimer: I have not tested this function on quizzes with multiple pages :)
+
     Args:
         fname (str):            Path to the large PDF to split. 
         names (str):            Path to a txt file containing the order in which to name the files
@@ -15,21 +17,24 @@ def split(fname, names, folder, pages=1):
     Returns: 
         This function does not return anything. 
     """
-    
+
     with open(names) as f:
         lines = f.readlines()
-        lines = [x[0] for x.strip().split(" ") in lines]
+        lines = [x.split(" ")[0].strip() for x in lines]
     
     infile = PdfReader(fname)
-    page_num = 0
+    page_num = 1
+    student = 0
     for i in range(len(infile.pages)):
         out = PdfWriter()
-
         if page_num < pages:
             out.addpage(infile.pages[i])
+            page_num += 1
         else:
-            page_num = 0
-            out.write("%s%s.pdf" % (folder, lines[i]))
+            out.addpage(infile.pages[i])
+            out.write("%s%s.pdf" % (folder, lines[student]))
+            page_num = 1
+            student += 1
 
 def PDFmerge(pdfs, output): 
     """
