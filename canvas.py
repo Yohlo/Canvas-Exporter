@@ -83,7 +83,7 @@ class Canvas:
 
         students = self.getStudents()
         for student in students:
-            if student["login_id"] = username:
+            if student["login_id"] == username:
                 return student["id"]
         
         return -1
@@ -215,7 +215,7 @@ class Canvas:
 
             self._setHeaders(s)
             
-            data = {'comment[file_ids]': files}
+            data = {'comment[file_ids]': files, 'submission[posted_grade]': grade}
             url = self.url + 'courses/%s/assignments/%s/submissions/%s' % (self.course_id, assignment_id, student_id)
             r = s.put(url, params=data)
 

@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 from canvas import Canvas
+import PDF
 
 commands = ['quizzes', 'split']
 
@@ -23,24 +24,49 @@ def quizzes(args):
 
     conf = loadConfig(args.config)
     c = Canvas(conf["token"], conf["course_id"], conf["URL"])
+    students = c.getStudents()
 
     with open(args.grades) as f:
 
+        grades = {}
         lines = [line.strip() for line in f.readlines()]
         for line in lines:
-
             student,grade = line.split(" ")
-            student_id = c.getStudentID(student)
-            fname = "%s%s.pdf" % (folder, username)
+            grades[student] = grade
+
+        for student in students:
+            student_id = student["id"]
+            username = student["login_id"]
+            fname = "%s%s.pdf" % (args.folder, username)
 
             if not os.path.isfile(fname):
-                raise Exception("File %s does not exist. " % fname)
+                print("File %s does not exist. " % fname)
+                grade = 0
+                files = None
+            else:
+                grade = grades[username]
+                files = [c.uploadFileToSubmission(fname, args.assignment_id, student_id)]
 
-            fid = c.uploadFileToSubmission(fname, args.assignment_id, student_id)
-            c.gradeAssignmentAndComment(student_id, args.assignment_id, grade, files=[fid])
+            print(c.gradeAssignmentAndComment(student_id, args.assignment_id, grade, files=files))
 
 def split(args):
-    pass
+    """
+    This function blah ...
+
+    Args:
+        fname (str):  Path to PDF document to split
+        names (str): Path to txt file containing ordered names of the new files
+        folder (str): Folder to save the new documents into
+        pages (int, optional): Number of pages each split document should have
+    
+    Returns:
+        blah
+
+    Blah:
+        blah
+    """
+    PDF.split(args.fname, args.names, args.folder)
+
 
 def quizzes_parser(parser):
     parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
