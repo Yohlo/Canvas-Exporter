@@ -4,7 +4,7 @@ import os
 from canvas import Canvas
 import PDF
 
-commands = ['quizzes', 'split']
+commands = ['quizzes', 'split', 'convert']
 
 def quizzes(args):
     """
@@ -67,6 +67,21 @@ def split(args):
     """
     PDF.split(args.fname, args.names, args.folder)
 
+def convert(args):
+    """
+    This function blah ...
+
+    Args:
+        fname(str): Path to file to conveert
+        ext(str):   File extension to convert it to
+    
+    Returns:
+        blah
+
+    Blah:
+        blah
+    """
+    os.system('convert %s %s' % (args.fname, args.new_fname))
 
 def quizzes_parser(parser):
     parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
@@ -79,6 +94,10 @@ def split_parser(parser):
     parser.add_argument("names", help="Path to txt file containing ordered names of the new files")
     parser.add_argument("folder", help="Folder to save the new documents into")
     parser.add_argument("-p", '--pages', nargs='?', default=1, help="Optional. Number of pages each split document should have")
+
+def convert_parser(parser):
+    parser.add_argument("fname", help="Path to file to convert")
+    parser.add_argument("new_fname", help="Path to place the converted file")
 
 def loadConfig(config):
     """
