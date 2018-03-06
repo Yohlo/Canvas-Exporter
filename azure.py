@@ -26,7 +26,19 @@ class Azure:
         self.url = url
         self.key = key
 
-    
+    """
+
+    ## Unimplemented method for not exceeding the rate limit
+
+    def rate_catch(r, *args, **kwargs):
+        if 'X-Rate-Limit-Remaining' not in r.headers:
+            return
+        if(int(r.headers['X-Rate-Limit-Remaining']) <= 1):
+            time.sleep(abs((int(r.headers['X-Rate-Limit-Reset']) - int(time.time()))))
+        else:
+            time.sleep(abs((int(r.headers['X-Rate-Limit-Reset']) - int(time.time())) / int(r.headers['X-Rate-Limit-Remaining'])))
+    """
+
     def recognizeHandwritingFromFile(self, file_path):
         """
         This function returns the handwritten text detected in an image.
@@ -79,7 +91,7 @@ class Azure:
         try:
             assert result.status_code == 202
         except Exception:
-            print(result)
+            print(result.text)
             
 
         # The URL which will contain the HWR result

@@ -55,7 +55,6 @@ class ImageProcessorTests(unittest.TestCase):
         print(image_results['score'])
         print(image_results['username'])
 
-
 if __name__ == '__main__':
     sys.path.insert(0, '../')
     from image_processor import ImageProcessor

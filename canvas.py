@@ -44,6 +44,19 @@ class Canvas:
         ## TODO:
         ## Add checks to make sure given arguments are valid!
 
+    """
+
+    ## Unimplemented method for not exceeding the rate limit
+
+    def rate_catch(r, *args, **kwargs):
+        if 'X-Rate-Limit-Remaining' not in r.headers:
+            return
+        if(int(r.headers['X-Rate-Limit-Remaining']) <= 1):
+            time.sleep(abs((int(r.headers['X-Rate-Limit-Reset']) - int(time.time()))))
+        else:
+            time.sleep(abs((int(r.headers['X-Rate-Limit-Reset']) - int(time.time())) / int(r.headers['X-Rate-Limit-Remaining'])))
+    """
+
     def _setHeaders(self, s):
          """
          This function takes a session and set the appropriate authorization headers.
@@ -197,25 +210,25 @@ class Canvas:
             s.headers.update({'Content-Type': 'application/pdf'}) ## since the Canvas API returns the file we are deleting
             r = s.delete(self.url + 'files/%s' % (file_id))
 
-    def gradeAssignmentAndComment(self, student_id, assignment_id, grade, files=None):
+    def gradeAssignmentAndComment(self, student_id, assignment_id, grade, comment=None, files=None):
         """
         This function grades and comments a file to a submission for the given student on the given assignment. 
 
         Args:
-            student_id (str|int):   The unique Canvas ID of the student
+            student_id (str|int):   The unique CanvasID of the student
             assignment_id(str|int): The unique Canvas ID of the assignment
             grade (str):            The grade the student recieves for an assignment. Should be a string to include decimal results.
             files (int, optional):  A list of file IDs to upload for the comment. 
 
         Returns: 
             json: The result of the call to the submissions URL as returned by the Canvas API. 
-
+ 
         """
         with requests.Session() as s:
 
             self._setHeaders(s)
             
-            data = {'comment[file_ids]': files, 'submission[posted_grade]': grade}
+            data = {'comment[file_ids]': files, 'submission[posted_grade]': grade, 'comment[text_comment]': comment}
             url = self.url + 'courses/%s/assignments/%s/submissions/%s' % (self.course_id, assignment_id, student_id)
             r = s.put(url, params=data)
 
