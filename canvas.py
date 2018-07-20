@@ -169,7 +169,8 @@ class Canvas:
             r = s.post(upload_url, data=data, files={'file': open(file_path, 'rb')})
 
         return r.json()
-                
+    
+    # TODO : Figure out why this breaks
     def uploadFileToSubmission(self, file_path, assignment_id, student_id):
         """
         This function uploads a file to the submission comments for the given student on the given assingment. 

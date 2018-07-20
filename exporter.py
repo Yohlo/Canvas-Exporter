@@ -2,24 +2,12 @@ import argparse
 import json
 import os
 from canvas import Canvas
-from azure import Azure
-from image_processor import ImageProcessor
 from string_matcher import StringMatcher
-from models.template import Template
 import PDF
 
-commands = ['scan']
+commands = ['quizzes']
 
-def scan(args):
-    files = []
-
-    azure_conf = loadConfig(args.azure_config)
-
-    for x in os.listdir(args.folder):
-        if x.endswith('.png'):
-            ## Read score/username?
-            print(readQuiz(azure_conf, args.folder + x))
-
+# TODO : Fix implementation
 def quizzes(args):
     """
     This function blah ...
@@ -63,29 +51,24 @@ def quizzes(args):
 
             print(c.gradeAssignmentAndComment(student_id, args.assignment_id, grade, files=files))
 
-"""
- ## UNIMPLEMENTED
 def quizzes_parser(parser):
     parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
     parser.add_argument("folder", help="Path to folder containing all of the quizzes. End with a \"/\".")
-    #parser.add_argument("files", help="List of files contained within the given folder parameter to scan and grade")
-    parser.add_argument("usernames", help="Path to text document containing usernames of students.")
+    parser.add_argument("usernames", help="Path to text document containing usernames of students,  with their corresponding grade next to their usernames seperated by a space.")
     parser.add_argument("canvas_config", help="Path to configuration file containing token and canvas URL")
-    parser.add_argument("azure_config", help="Path to configuration file containing token and canvas URL")
-    parser.add_argument('-f', nargs = '*', dest = 'files', help = 'List of files contained within the given folder parameter to scan and grade', default = None)
     parser.add_argument("solution", nargs="?", help="Optional solution file to attach to each comment")
     parser.add_argument("comment", nargs="?", help="Optional comment to comment on each submission")
-"""
-
-def scan_parser(parser):
-    parser.add_argument("folder", help="Path to folder containing all of the quizzes. End with a \"/\".")
-    parser.add_argument("azure_config", help="Path to configuration file containing token and canvas URL")
     parser.add_argument('-f', nargs = '*', dest = 'files', help = 'List of files contained within the given folder parameter to scan and grade', default = None)
 
+# TODO : Implement, will be used for uploading autolab grades to Canvas. 
 def autolab_parser(parser):
     parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
     parser.add_argument("grades", help="Path to CSV file exported from autolab containing the grades to the assignment.")
     parser.add_argument("config", help="Path to configuration file containing token and canvas URL")
+
+"""
+ HELPER FUNCTIONS: 
+"""
 
 def loadConfig(config):
     """
@@ -99,36 +82,6 @@ def loadConfig(config):
     """
     with open(config) as conf:
         return json.load(conf)
-
-def readQuiz(config, file):
-    """
-    Blah
-    """
-    # Load configuration
-    url = config['URL']
-    key = config['key1']
-
-    data = None
-    with open(file, 'rb') as f:
-        data = f.read()
-
-    # Initialize Template
-    quiz_template = Template()
-    quiz_template.addBox('score', (1450, 130, 165, 125), 'int')
-    quiz_template.addBox('username', (1190, 201, 262, 77), 'str')
-
-    azure = Azure(url, key)
-
-    # Initialize ImageProcessor
-    ip = ImageProcessor(quiz_template, azure)
-
-    image_results = ip.processImage(data)
-
-    print(image_results['score'])
-    print(image_results['username'])
-
-    return (image_results['username'], image_results['score'])
-
 
 def main():
     __globals__ = globals()

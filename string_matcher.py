@@ -30,7 +30,7 @@ class StringMatcher:
             match (str): the string from the class string set which was matched
 
         """
-        matches = sorted(zip(self.set, map(lambda s2: normalized_levenshtein(s2, s), self.set)), key=lambda z: z[1])
+        matches = sorted(zip(self.set, map(lambda s2: self.normalized_levenshtein(s2, s), self.set)), key=lambda z: z[1])
 
         best_match = None
         for st, score in matches:
@@ -42,7 +42,7 @@ class StringMatcher:
                     break
                 else:
                     print('Distance was over threshold for best match (' + str(score) + ' > ' + str(threshold) + ')')
-                    best_match = input('Please enter the name found on username.png: ').strip()
+                    best_match = input('Please enter the name found on the assignment: ').strip()
                     if unique:
                         self.matches.add(best_match)
 
@@ -62,7 +62,7 @@ class StringMatcher:
             result (float): the normalized levenshtein distance between the two strings
         """
         # 0.001 is there to prevent dividing by 0
-        return levenshtein(s1, s2)/(max(len(s1), len(s2), 0.001))
+        return self.levenshtein(s1, s2)/(max(len(s1), len(s2), 0.001))
 
     def levenshtein(self, s1, s2):
         """
@@ -80,7 +80,7 @@ class StringMatcher:
         """
 
         if len(s1) < len(s2):
-            return levenshtein(s2, s1)
+            return self.levenshtein(s2, s1)
         
         if len(s2) == 0:
             return len(s1)
