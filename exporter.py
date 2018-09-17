@@ -1,11 +1,13 @@
 import argparse
 import json
 import os
+import csv
+from datetime import datetime
 from canvas import Canvas
 from string_matcher import StringMatcher
-import PDF
+import PDF as pdf
 
-commands = ['quizzes']
+commands = ['quizzes', 'autograder', 'merge', 'split']
 
 # TODO : Fix implementation
 def quizzes(args):
@@ -25,10 +27,11 @@ def quizzes(args):
     """
 
     canvas_conf = loadConfig(args.canvas_config)
-    c = Canvas(conf["token"], conf["course_id"], conf["URL"])
+    c = Canvas(canvas_conf["token"], canvas_conf["course_id"], canvas_conf["URL"])
     students = c.getStudents()
 
-    with open(args.students) as f:
+    files = []
+    with open(args.usernames) as f:
 
         grades = {}
         lines = [line.strip() for line in f.readlines()]
@@ -51,6 +54,26 @@ def quizzes(args):
 
             print(c.gradeAssignmentAndComment(student_id, args.assignment_id, grade, files=files))
 
+def autograder(args):
+
+    due_date = datetime.strptime(args.due_date, "%Y-%m-%d")
+
+    with open(args.file, 'rt', encoding='utf8') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        reader.__next__() # skip the first line, which is the headers
+
+        for row in reader:
+            username = row[0].split('@')[0]
+            submission_date = datetime.strptime(row[1].split('T')[0], "%Y-%m-%d")
+            score = int(row[2])
+            print(str(username) + ' ' + str(submission_date) + ' ' + str(score))
+
+def split(args):
+    pdf.split(args.fname, args.names, args.folder, int(args.pages))
+
+def merge(args):
+    pdf.merge(args.pdfs, args.output)
+
 def quizzes_parser(parser):
     parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
     parser.add_argument("folder", help="Path to folder containing all of the quizzes. End with a \"/\".")
@@ -60,16 +83,25 @@ def quizzes_parser(parser):
     parser.add_argument("comment", nargs="?", help="Optional comment to comment on each submission")
     parser.add_argument('-f', nargs = '*', dest = 'files', help = 'List of files contained within the given folder parameter to scan and grade', default = None)
 
-# TODO : Implement, will be used for uploading autolab grades to Canvas. 
-def autolab_parser(parser):
+def autograder_parser(parser):
     parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
-    parser.add_argument("grades", help="Path to CSV file exported from autolab containing the grades to the assignment.")
+    parser.add_argument("file", help="Path to CSV file exported from the autograder containing the grades to the assignment.")
+    parser.add_argument("due_date", help="Due date for the assignment in the format yyyy-mm-dd")
     parser.add_argument("config", help="Path to configuration file containing token and canvas URL")
+
+def merge_parser(parser):
+    parser.add_argument("output", help="File to output merged pdfs to")
+    parser.add_argument("pdfs", nargs='+', help='PDFs to merge')
+
+def split_parser(parser):
+    parser.add_argument("fname", help="Name/path to file to split")
+    parser.add_argument("names", help="text document with names, in order, to split the document by")
+    parser.add_argument("folder", help="folder to save all new pdfs in")
+    parser.add_argument("pages", nargs="?", help="How many pages per document", default=1)
 
 """
  HELPER FUNCTIONS: 
 """
-
 def loadConfig(config):
     """
     This function loads a config file into a JSON for use with our program.

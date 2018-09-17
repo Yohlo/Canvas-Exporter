@@ -136,11 +136,14 @@ class Canvas:
             url = self.url + 'courses/%s/assignments/%s/submissions/%s/comments/files' % (self.course_id, assignment_id, student_id)
             r = s.post(url, params=data) 
             
+            print(r.text)
+
             try:
                 result = r.json()
             except:
                 raise Exception("File Upload Token could not be retrieved.")
 
+        print(result)
         return result
 
     def _confirmUpload(self, file_path, prepare_result):
@@ -168,6 +171,10 @@ class Canvas:
         with requests.Session() as s:
             r = s.post(upload_url, data=data, files={'file': open(file_path, 'rb')})
 
+        print(r)
+        print(r.text)
+        print(upload_url)
+
         return r.json()
     
     # TODO : Figure out why this breaks
@@ -190,6 +197,8 @@ class Canvas:
         prepare_result = self._prepareFileUpload(file_path, assignment_id, student_id)
         result = self._confirmUpload(file_path, prepare_result)
         
+        print(result)
+
         return result['id']
 
     def deleteFile(self, file_id):

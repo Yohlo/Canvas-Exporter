@@ -36,7 +36,7 @@ def split(fname, names, folder, pages=1):
             page_num = 1
             student += 1
 
-def PDFmerge(pdfs, output): 
+def merge(pdfs, output): 
     """
     This function takes a list of PDFs and merges them into one PDF, in the order they are in the list.
 
