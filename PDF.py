@@ -1,7 +1,7 @@
 from pdfrw import PdfReader, PdfWriter
 import pdfrw
 
-def split(fname, names, folder, pages=1):
+def split(fname, usernames, folder, pages=1):
     """
     This function splits a big pdf into individual ones and names them 
     in the order given in a txt files. This function relies on the pdfrw library.
@@ -10,21 +10,16 @@ def split(fname, names, folder, pages=1):
 
     Args:
         fname (str):            Path to the large PDF to split. 
-        names (str):            Path to a txt file containing the order in which to name the files
+        usernames (str):        List of usernames, in order, to be used as file names. 
         folder (str, optional): Folder to save the new PDFs in. 
         pages (int, optional):  Number of pages to include in the smaller PDFs
 
     Returns: 
         This function does not return anything. 
     """
-
-    with open(names) as f:
-        lines = f.readlines()
-        lines = [x.split(" ")[0].strip() for x in lines]
     
     infile = PdfReader(fname)
     page_num = 1
-    student = 0
     for i in range(len(infile.pages)):
         out = PdfWriter()
         if page_num < pages:
@@ -32,9 +27,8 @@ def split(fname, names, folder, pages=1):
             page_num += 1
         else:
             out.addpage(infile.pages[i])
-            out.write("%s%s.pdf" % (folder, lines[student]))
+            out.write("%s%s.pdf" % (folder, usernames.pop(0)))
             page_num = 1
-            student += 1
 
 def merge(pdfs, output): 
     """

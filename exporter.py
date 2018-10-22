@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 from canvas import Canvas
 from string_matcher import StringMatcher
 import PDF as pdf
@@ -28,7 +28,11 @@ def quizzes(args):
 
     canvas_conf = loadConfig(args.canvas_config)
     c = Canvas(canvas_conf["token"], canvas_conf["course_id"], canvas_conf["URL"])
+
     students = c.getStudents()
+
+    student_username_set = [student['login_id'] for student in students]
+    string_matcher = StringMatcher(student_username_set)
 
     files = []
     with open(args.usernames) as f:
@@ -36,8 +40,9 @@ def quizzes(args):
         grades = {}
         lines = [line.strip() for line in f.readlines()]
         for line in lines:
-            student = line
-            grades[student] = line
+            line = line.split(" ")
+            student = string_matcher.match_str(line[0])
+            grades[student] = line[1]
 
         files = [args.solution]
         for student in students:
@@ -56,6 +61,10 @@ def quizzes(args):
 
 def autograder(args):
 
+    canvas_conf = loadConfig(args.canvas_config)
+    c = Canvas(canvas_conf["token"], canvas_conf["course_id"], canvas_conf["URL"])
+
+    students = c.getStudents()
     due_date = datetime.strptime(args.due_date, "%Y-%m-%d")
 
     with open(args.file, 'rt', encoding='utf8') as csvfile:
@@ -63,13 +72,55 @@ def autograder(args):
         reader.__next__() # skip the first line, which is the headers
 
         for row in reader:
-            username = row[0].split('@')[0]
-            submission_date = datetime.strptime(row[1].split('T')[0], "%Y-%m-%d")
-            score = int(row[2])
-            print(str(username) + ' ' + str(submission_date) + ' ' + str(score))
+            usernames = (row[0].split('@')[0], row[1].split('@')[0])
+
+            submission_date = datetime.strptime(row[2], "%Y-%m-%dT%H:%M:%S.%f%z")
+            submission_date -= timedelta(hours=4) # adjusting for timezone
+            submission_date = submission_date.replace(tzinfo=None)
+            score = int(row[3])
+
+            submission_date_difference = (submission_date - due_date).days
+            print(submission_date_difference)
+            late_penalty = submission_date_difference * 5 if submission_date_difference >= 0 else 0
+            score -= late_penalty
+            if score < 0:
+                score = 0
+
+            comment = "You recieved a %s point late penalty for submitting your assignment %s day(s) late. " % (late_penalty, submission_date_difference)
+            comment = comment if late_penalty else None
+
+            print(comment)
+
+            for username in usernames:
+                student_id = [student['id'] for student in students if student['login_id'] == str(username)]
+                if student_id:
+                    student_id = student_id[0]
+                else: 
+                    print(str(username) + " was not found. Score: " + str(score))
+                    continue
+
+                print(student_id, "received ", score)
+                #c.gradeAssignmentAndComment(student_id, args.assignment_id, score, comment=None, files=None)
 
 def split(args):
-    pdf.split(args.fname, args.names, args.folder, int(args.pages))
+
+    canvas_conf = loadConfig(args.canvas_config)
+    c = Canvas(canvas_conf["token"], canvas_conf["course_id"], canvas_conf["URL"])
+    students = c.getStudents()
+
+    student_username_set = [student['login_id'] for student in students]
+    string_matcher = StringMatcher(student_username_set)
+
+    with open(args.names) as f:
+
+        usernames = []
+        lines = [line.strip() for line in f.readlines()]
+        for line in lines:
+            line = line.split(" ")
+            student = string_matcher.match_str(line[0])
+            usernames.append(student)
+
+    pdf.split(args.fname, usernames, args.folder, int(args.pages))
 
 def merge(args):
     pdf.merge(args.pdfs, args.output)
@@ -87,7 +138,7 @@ def autograder_parser(parser):
     parser.add_argument("assignment_id", help="Unique Canvas ID for the assignment to grade")
     parser.add_argument("file", help="Path to CSV file exported from the autograder containing the grades to the assignment.")
     parser.add_argument("due_date", help="Due date for the assignment in the format yyyy-mm-dd")
-    parser.add_argument("config", help="Path to configuration file containing token and canvas URL")
+    parser.add_argument("canvas_config", help="Path to configuration file containing token and canvas URL")
 
 def merge_parser(parser):
     parser.add_argument("output", help="File to output merged pdfs to")
@@ -97,6 +148,7 @@ def split_parser(parser):
     parser.add_argument("fname", help="Name/path to file to split")
     parser.add_argument("names", help="text document with names, in order, to split the document by")
     parser.add_argument("folder", help="folder to save all new pdfs in")
+    parser.add_argument("canvas_config", help="Path to configuration file containing token and canvas URL")
     parser.add_argument("pages", nargs="?", help="How many pages per document", default=1)
 
 """

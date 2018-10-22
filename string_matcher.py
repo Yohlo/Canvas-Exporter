@@ -42,7 +42,7 @@ class StringMatcher:
                     break
                 else:
                     print('Distance was over threshold for best match (' + str(score) + ' > ' + str(threshold) + ')')
-                    best_match = input('Please enter the name found on the assignment: ').strip()
+                    best_match = input('Please enter the name found on the assignment for \"%s\": ' % s).strip()
                     if unique:
                         self.matches.add(best_match)
 

@@ -28,7 +28,7 @@ class Canvas:
        _setHeaders function to set the authentication token and content-type. Example:
        
        with requests.Session() as s:
-           self-_setHeaders(s)
+           self._setHeaders(s)
            
            r = s.get(self.url + 'courses')
 
@@ -45,7 +45,6 @@ class Canvas:
         ## Add checks to make sure given arguments are valid!
 
     """
-
     ## Unimplemented method for not exceeding the rate limit
 
     def rate_catch(r, *args, **kwargs):
@@ -101,7 +100,7 @@ class Canvas:
         
         return -1
 
-    def _prepareFileUpload(self, file_path, assignment_id, student_id):
+    def _prepareFileUpload(self, url, file_path):
         """
         This function tells Canvas that we are about to upload a file to the given
         assignment and user for a comment to the submission.The logic of this function
@@ -133,7 +132,6 @@ class Canvas:
             ## get the size, prepare parameters and make the request. 
             size = os.path.getsize(file_path)
             data = {'name': file_name, 'size': size}
-            url = self.url + 'courses/%s/assignments/%s/submissions/%s/comments/files' % (self.course_id, assignment_id, student_id)
             r = s.post(url, params=data) 
             
             print(r.text)
@@ -194,7 +192,17 @@ class Canvas:
             [1]: https://canvas.instructure.com/doc/api/file.file_uploads.html
 
         """
-        prepare_result = self._prepareFileUpload(file_path, assignment_id, student_id)
+        url = self.url + 'courses/%s/assignments/%s/submissions/%s/comments/files' % (self.course_id, assignment_id, student_id)
+        prepare_result = self._prepareFileUpload(url, file_path)
+        result = self._confirmUpload(file_path, prepare_result)
+        
+        print(result)
+
+        return result['id']
+
+    def uploadFileToFiles(self, file_path):
+        url = self.url + 'courses/%s/files' % (self.course_id)
+        prepare_result = self._prepareFileUpload(url, file_path)
         result = self._confirmUpload(file_path, prepare_result)
         
         print(result)
