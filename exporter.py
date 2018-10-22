@@ -80,7 +80,6 @@ def autograder(args):
             score = int(row[3])
 
             submission_date_difference = (submission_date - due_date).days
-            print(submission_date_difference)
             late_penalty = submission_date_difference * 5 if submission_date_difference >= 0 else 0
             score -= late_penalty
             if score < 0:
@@ -88,8 +87,6 @@ def autograder(args):
 
             comment = "You recieved a %s point late penalty for submitting your assignment %s day(s) late. " % (late_penalty, submission_date_difference)
             comment = comment if late_penalty else None
-
-            print(comment)
 
             for username in usernames:
                 student_id = [student['id'] for student in students if student['login_id'] == str(username)]
