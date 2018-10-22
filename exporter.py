@@ -100,7 +100,7 @@ def autograder(args):
                     continue
 
                 print(student_id, "received ", score)
-                #c.gradeAssignmentAndComment(student_id, args.assignment_id, score, comment=None, files=None)
+                #c.gradeAssignmentAndComment(student_id, args.assignment_id, score, comment=comment, files=None)
 
 def split(args):
 
