@@ -8,9 +8,10 @@ You must add a config file (canvas.conf) in the same directory as exporter.py,
 and it must be of the format:
 
 {
-    "URL": "",
-    "token": "",
-    "course_id": ""
+
+    "URL": "https://lmsproxy.uits.iu.edu/lmspx-prd/canvas/",
+    "token": [Kyle's Token],
+    "course_id": [Course ID]
 }
 
 For help: 
