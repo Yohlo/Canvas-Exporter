@@ -4,8 +4,7 @@ An ongoing project to automate grading stuff in Canvas using Python3
 
 #### Usage
 
-You must add a config file (canvas.conf) in the same directory as exporter.py,
-and it must be of the format:
+You must add a config file (canvas.conf) of the format:
 
 {
 
@@ -16,6 +15,6 @@ and it must be of the format:
 
 For help: 
 
-`python3 grade.py -h`
+`python3 exporter.py -h`
 
-`python3 grade.py quizzes -h`
+`python3 exporter.py quizzes -h`
