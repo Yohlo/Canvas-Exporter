@@ -3,3 +3,4 @@ configs/
 docs/
 .DS_Store
 canvas.conf
+.vscode
